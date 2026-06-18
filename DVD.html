@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { margin: 0; background: #000; overflow: hidden; height: 100vh; }
+        #dvd {
+            position: absolute;
+            width: 120px;
+            height: 60px;
+            background: #fff;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: sans-serif;
+            font-weight: bold;
+            transition: background 0.1s;
+        }
+    </style>
+</head>
+<body>
+
+<div id="dvd">DVD</div>
+
+<script>
+    const dvd = document.getElementById('dvd');
+    let x = 0, y = 0, dx = 4, dy = 4, hits = 0, active = true;
+    const w = 120, h = 60, r = 30;
+
+    function getColor() {
+        return '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+    }
+
+    function checkCollision() {
+        let hit = false;
+        let cX = x + r;
+        let cY = y + r;
+        let cW = w - 2 * r;
+        
+        if (x <= 0 || x + w >= window.innerWidth) {
+            dx = -dx;
+            hit = true;
+        }
+        if (y <= 0 || y + h >= window.innerHeight) {
+            dy = -dy;
+            hit = true;
+        }
+        
+        if (hit) {
+            dvd.style.backgroundColor = getColor();
+            if ((x <= 0 || x + w >= window.innerWidth) && (y <= 0 || y + h >= window.innerHeight)) {
+                hits++;
+                console.log("Corner hits:", hits);
+            }
+        }
+    }
+
+    function animate() {
+        if (!active) return;
+        x += dx;
+        y += dy;
+        checkCollision();
+        dvd.style.left = x + 'px';
+        dvd.style.top = y + 'px';
+        requestAnimationFrame(animate);
+    }
+
+    const observer = new MutationObserver((m) => {
+        m.forEach((mut) => {
+            mut.removedNodes.forEach((node) => {
+                if (node === dvd) {
+                    alert("no");
+                    document.body.appendChild(dvd);
+                }
+            });
+        });
+    });
+    observer.observe(document.body, { childList: true });
+
+    window.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.key === 'F4') {
+            active = false;
+            dvd.style.filter = "invert(1) blur(5px)";
+            dvd.style.transform = "scale(0.5) skew(20deg)";
+        }
+    });
+
+    for(let i=0; i<120; i++) {
+        let angle = (i / 120) * 2 * Math.PI;
+        let pX = r * Math.cos(angle);
+        let pY = r * Math.sin(angle);
+        let dist = Math.sqrt(pX * pX + pY * pY);
+    }
+
+    animate();
+</script>
+</body>
+</html>
