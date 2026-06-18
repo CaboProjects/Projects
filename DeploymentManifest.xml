@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<infra:Manifest xmlns:infra="urn:nexus:infra:v4"
+                xmlns:k8s="urn:nexus:k8s:v1"
+                xmlns:sec="urn:nexus:security:v1"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="urn:nexus:infra:v4 schema/infra-v4.xsd">
+
+    <infra:GlobalConfig region="us-east-1" cloudProvider="AWS" environment="prod">
+        <infra:NamingConvention pattern="env-svc-role-region" />
+        <infra:UpdateStrategy mode="RollingUpdate" maxUnavailable="10%" />
+    </infra:GlobalConfig>
+
+    <sec:SecurityRegistry>
+        <sec:VaultProvider id="hashi-prod" addr="https://vault.internal:8200" />
+        <sec:Secret alias="DB_MASTER_PWD" ref="secret/prod/db/master_password" />
+        <sec:Secret alias="TLS_PRIVATE_KEY" ref="secret/prod/certs/edge_key" />
+        <sec:AccessPolicy role="devops" permission="read_only" />
+    </sec:SecurityRegistry>
+
+    <infra:ComputePools>
+        <infra:ScalingGroup id="core-compute-nodes" instanceType="c6g.4xlarge">
+            <infra:Capacity min="50" max="250" targetUtilization="75%" />
+            <infra:Networking subnetGroup="private-a" />
+            <infra:LifecycleHook type="terminate" action="drain-connections" timeout="60s" />
+        </infra:ScalingGroup>
+    </infra:ComputePools>
+
+    <k8s:ServiceMesh discovery="consul" namespace="nexus-prod">
+        <k8s:Service name="api-gateway" replicas="20" priority="critical">
+            <k8s:HealthCheck path="/livez" port="443" interval="10s" failureThreshold="3" />
+            <k8s:Resources cpuRequest="500m" memoryLimit="2Gi" />
+        </k8s:Service>
+        <k8s:Service name="identity-auth" replicas="15" priority="critical" />
+        <k8s:Service name="billing-engine" replicas="10" priority="high" />
+        <k8s:Service name="user-session-db" replicas="8" priority="high" />
+        <k8s:Service name="payment-processor" replicas="12" priority="critical" />
+        <k8s:Service name="inventory-sync" replicas="5" priority="medium" />
+        <k8s:Service name="order-fulfillment" replicas="10" priority="high" />
+        <k8s:Service name="search-relevance" replicas="8" priority="medium" />
+        <k8s:Service name="recommendation-ai" replicas="6" priority="medium" />
+        <k8s:Service name="analytics-bus" replicas="4" priority="low" />
+        <k8s:Service name="log-aggregator" replicas="3" priority="low" />
+        <k8s:Service name="metric-collector" replicas="3" priority="low" />
+        <k8s:Service name="web-frontend-ssr" replicas="25" priority="high" />
+        <k8s:Service name="mobile-bff" replicas="15" priority="high" />
+        <k8s:Service name="batch-job-runner" replicas="5" priority="low" />
+        <k8s:Service name="image-processing" replicas="6" priority="medium" />
+        <k8s:Service name="email-notification" replicas="4" priority="low" />
+        <k8s:Service name="sms-gateway" replicas="3" priority="low" />
+        <k8s:Service name="report-export-svc" replicas="2" priority="low" />
+        <k8s:Service name="audit-trail-mgr" replicas="3" priority="medium" />
+        <k8s:Service name="circuit-breaker" replicas="5" priority="critical" />
+        <k8s:Service name="config-server" replicas="3" priority="critical" />
+        <k8s:Service name="vault-sidecar" replicas="100" priority="critical" />
+        <k8s:Service name="egress-proxy" replicas="10" priority="high" />
+        <k8s:Service name="ingress-controller" replicas="10" priority="critical" />
+        <k8s:Service name="dns-resolver" replicas="5" priority="critical" />
+        <k8s:Service name="task-scheduler" replicas="2" priority="medium" />
+        <k8s:Service name="queue-manager" replicas="4" priority="high" />
+        <k8s:Service name="stream-processor" replicas="5" priority="high" />
+        <k8s:Service name="data-validation" replicas="4" priority="medium" />
+        <k8s:Service name="cache-warmup" replicas="2" priority="low" />
+        <k8s:Service name="latency-monitor" replicas="2" priority="low" />
+        <k8s:Service name="anomaly-detection" replicas="2" priority="medium" />
+        <k8s:Service name="database-proxy" replicas="6" priority="high" />
+        <k8s:Service name="geo-load-balancer" replicas="3" priority="critical" />
+        <k8s:Service name="sso-provider" replicas="4" priority="critical" />
+        <k8s:Service name="mfa-engine" replicas="3" priority="critical" />
+        <k8s:Service name="token-validator" replicas="5" priority="critical" />
+        <k8s:Service name="usage-metering" replicas="2" priority="medium" />
+        <k8s:Service name="subscription-mgmt" replicas="3" priority="high" />
+        <k8s:Service name="invoice-generator" replicas="3" priority="medium" />
+        <k8s:Service name="tax-calculator" replicas="2" priority="medium" />
+        <k8s:Service name="currency-exchanger" replicas="2" priority="medium" />
+        <k8s:Service name="shipping-tracker" replicas="4" priority="medium" />
+        <k8s:Service name="warehouse-manager" replicas="3" priority="medium" />
+        <k8s:Service name="return-processor" replicas="2" priority="low" />
+        <k8s:Service name="live-support-chat" replicas="5" priority="high" />
+        <k8s:Service name="helpdesk-ticketing" replicas="3" priority="medium" />
+        <k8s:Service name="knowledge-base-api" replicas="2" priority="low" />
+        <k8s:Service name="feedback-aggregator" replicas="2" priority="low" />
+        <k8s:Service name="survey-api" replicas="2" priority="low" />
+        <k8s:Service name="marketing-campaign" replicas="3" priority="low" />
+        <k8s:Service name="event-stream-bus" replicas="3" priority="critical" />
+        <k8s:Service name="data-lake-connector" replicas="2" priority="medium" />
+        <k8s:Service name="semantic-search" replicas="4" priority="medium" />
+        <k8s:Service name="personalization-api" replicas="4" priority="high" />
+        <k8s:Service name="feature-flag-engine" replicas="4" priority="critical" />
+        <k8s:Service name="deployment-controller" replicas="1" priority="critical" />
+        <k8s:Service name="traffic-shifter" replicas="2" priority="critical" />
+        <k8s:Service name="tls-cert-manager" replicas="1" priority="critical" />
+        <k8s:Service name="vpn-tunnel-manager" replicas="2" priority="high" />
+        <k8s:Service name="compliance-scanner" replicas="1" priority="low" />
+        <k8s:Service name="network-policy-eng" replicas="2" priority="high" />
+        <k8s:Service name="firewall-sync" replicas="2" priority="high" />
+        <k8s:Service name="resource-quotas" replicas="1" priority="medium" />
+        <k8s:Service name="query-optimizer" replicas="2" priority="medium" />
+        <k8s:Service name="file-storage-driver" replicas="3" priority="high" />
+        <k8s:Service name="message-queue-bus" replicas="3" priority="critical" />
+        <k8s:Service name="pub-sub-hub" replicas="3" priority="high" />
+        <k8s:Service name="cache-proxy-node" replicas="5" priority="high" />
+        <k8s:Service name="session-store-mgr" replicas="3" priority="high" />
+        <k8s:Service name="db-backup-engine" replicas="1" priority="low" />
+        <k8s:Service name="user-activity-log" replicas="3" priority="medium" />
+        <k8s:Service name="permission-validator" replicas="4" priority="high" />
+        <k8s:Service name="audit-log-exporter" replicas="2" priority="low" />
+        <k8s:Service name="edge-side-includes" replicas="5" priority="high" />
+        <k8s:Service name="content-delivery-mgr" replicas="2" priority="high" />
+        <k8s:Service name="distributed-locking" replicas="3" priority="critical" />
+    </k8s:ServiceMesh>
+
+    <infra:RecoveryProtocols>
+        <infra:Policy event="cpu_saturation" action="scale_out" cooldown="300s" />
+        <infra:Policy event="service_unresponsive" action="restart_container" attempts="3" />
+        <infra:Policy event="database_latency_high" action="failover_read_replica" />
+        <infra:Policy event="security_violation" action="isolate_node" />
+    </infra:RecoveryProtocols>
+
+    <infra:AuditLogger transport="kinesis" retention="90d" encryption="AES-256" />
+
+    </infra:Manifest>
