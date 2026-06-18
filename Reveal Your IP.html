@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reveal Your IP</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f9;
+            margin: 0;
+        }
+
+        .ip-box {
+            background-color: #000;
+            color: #fff;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            min-width: 200px;
+        }
+
+        .ip-box:hover {
+            background-color: #222;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ip-box" id="ipBox" onclick="revealIP()" ondblclick="copyIP()">Click to see your IP</div>
+
+    <script>
+        let userIP = "Loading...";
+        let isRevealed = false;
+
+        fetch('https://api.ipify.org?format=json')
+            .then(response => response.json())
+            .then(data => {
+                userIP = data.ip;
+            })
+            .catch(error => {
+                userIP = "Error fetching IP";
+                console.error('Error:', error);
+            });
+
+        function revealIP() {
+            if (!isRevealed) {
+                const box = document.getElementById('ipBox');
+                box.innerText = userIP;
+                isRevealed = true;
+            }
+        }
+        function copyIP() {
+            
+            if (isRevealed && userIP !== "Loading..." && userIP !== "Error fetching IP") {
+                navigator.clipboard.writeText(userIP).then(() => {
+                    const box = document.getElementById('ipBox');
+                    
+                    box.innerText = "Copied!";
+                    box.style.backgroundColor = "#2e7d32"; 
+                    
+                    setTimeout(() => {
+                        box.innerText = userIP;
+                        box.style.backgroundColor = "#000";
+                    }, 1500);
+                }).catch(err => {
+                    console.error('Failed to copy: ', err);
+                });
+            }
+        }
+    </script>
+
+</body>
+</html>
